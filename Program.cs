@@ -1,4 +1,5 @@
 using FrameworkTest.Application;
+using FrameworkTest.Menus;
 using RaylibGameFramework.Configuration;
 using RaylibGameFramework.Input;
 
@@ -8,7 +9,8 @@ do
 {
     GameConfig config = ConfigLoader.Load("config.json");
     InputConfig inputConfig = InputConfigLoader.Load("input.json");
-    var application = new GameApplication(config, inputConfig);
+    MenuConfig menuConfig = MenuConfigLoader.Load("menu.json");
+    var application = new GameApplication(config, inputConfig, menuConfig);
     result = application.Run();
 }
 while (result == ApplicationRunResult.Restart);

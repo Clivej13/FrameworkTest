@@ -1,3 +1,4 @@
+using FrameworkTest.Menus;
 using RaylibGameFramework.Configuration;
 using RaylibGameFramework.Input;
 using Raylib_cs;
@@ -16,14 +17,22 @@ public sealed class GameApplication
 
     private readonly GameConfig _config;
     private readonly InputController _inputController;
+    private readonly MenuManager _menuManager;
     private ApplicationRunResult _runResult = ApplicationRunResult.Exit;
+    private ApplicationState _state = ApplicationState.Menu;
     private bool _stopRequested;
     private bool _windowInitialized;
+    private string? _lastMenuAction;
+    private int _preferredWindowedWidth;
+    private int _preferredWindowedHeight;
 
-    public GameApplication(GameConfig config, InputConfig inputConfig)
+    public GameApplication(GameConfig config, InputConfig inputConfig, MenuConfig menuConfig)
     {
         _config = config ?? throw new ArgumentNullException(nameof(config));
         _inputController = new InputController(inputConfig);
+        _menuManager = new MenuManager(menuConfig, _inputController, inputConfig);
+        _preferredWindowedWidth = config.WindowWidth;
+        _preferredWindowedHeight = config.WindowHeight;
     }
 
     public ApplicationRunResult Run()
@@ -73,7 +82,6 @@ public sealed class GameApplication
 
         Raylib.InitWindow(_config.WindowWidth, _config.WindowHeight, _config.WindowTitle);
         _windowInitialized = true;
-
         Raylib.SetWindowMonitor(PrimaryMonitor);
 
         if (!_config.Fullscreen)
@@ -88,9 +96,8 @@ public sealed class GameApplication
     {
         int monitorWidth = Raylib.GetMonitorWidth(PrimaryMonitor);
         int monitorHeight = Raylib.GetMonitorHeight(PrimaryMonitor);
-
-        int windowWidth = Math.Clamp(_config.WindowWidth, 1, monitorWidth);
-        int windowHeight = Math.Clamp(_config.WindowHeight, 1, monitorHeight);
+        int windowWidth = Math.Clamp(_preferredWindowedWidth, 1, monitorWidth);
+        int windowHeight = Math.Clamp(_preferredWindowedHeight, 1, monitorHeight);
 
         if (Raylib.GetScreenWidth() != windowWidth || Raylib.GetScreenHeight() != windowHeight)
         {
@@ -100,7 +107,6 @@ public sealed class GameApplication
         System.Numerics.Vector2 monitorPosition = Raylib.GetMonitorPosition(PrimaryMonitor);
         int windowX = (int)monitorPosition.X + ((monitorWidth - windowWidth) / 2);
         int windowY = (int)monitorPosition.Y + ((monitorHeight - windowHeight) / 2);
-
         Raylib.SetWindowPosition(windowX, windowY);
     }
 
@@ -110,28 +116,103 @@ public sealed class GameApplication
         {
             _inputController.Update();
 
+            if (_state == ApplicationState.Menu)
+            {
+                HandleMenuAction(_menuManager.Update());
+            }
+            else if (_inputController.WasPressed("MenuBack"))
+            {
+                _state = ApplicationState.Menu;
+                _menuManager.ReturnToStartMenu();
+            }
+
             Raylib.BeginDrawing();
             Raylib.ClearBackground(Color.RayWhite);
-            Raylib.DrawText("Framework Test", 20, 20, 20, Color.DarkGray);
-            Raylib.DrawText($"Physical: {_inputController.LastPhysicalInputName}", 20, 60, 30, Color.Black);
-            Raylib.DrawText($"Action: {_inputController.LastActionName}", 20, 100, 30, Color.Black);
-            DrawActionState("MoveForward", 160);
-            DrawActionState("Jump", 290);
-            DrawActionState("Fire", 420);
+
+            if (_state == ApplicationState.Menu)
+            {
+                _menuManager.Draw();
+                DrawLastMenuAction();
+            }
+            else
+            {
+                DrawGameStarted();
+            }
+
             Raylib.EndDrawing();
         }
     }
 
-    private void DrawActionState(string action, int y)
+    private void HandleMenuAction(MenuAction? action)
     {
-        const int fontSize = 20;
-        const int lineHeight = 24;
+        if (action is null)
+        {
+            return;
+        }
 
-        Raylib.DrawText(action, 20, y, fontSize, Color.DarkGray);
-        Raylib.DrawText($"Down: {_inputController.IsDown(action)}", 40, y + lineHeight, fontSize, Color.Black);
-        Raylib.DrawText($"Pressed: {_inputController.WasPressed(action)}", 40, y + (lineHeight * 2), fontSize, Color.Black);
-        Raylib.DrawText($"Released: {_inputController.WasReleased(action)}", 40, y + (lineHeight * 3), fontSize, Color.Black);
-        Raylib.DrawText($"Value: {_inputController.GetValue(action):0.00}", 40, y + (lineHeight * 4), fontSize, Color.Black);
+        _lastMenuAction = action.Value is null
+            ? action.Function
+            : $"{action.Function} = {action.Value}";
+
+        switch (action.Function)
+        {
+            case "StartGame":
+                _state = ApplicationState.GameStarted;
+                break;
+            case "ExitGame":
+                RequestExit();
+                break;
+            case "SetResolution" when action.Value is string resolution:
+                SetResolution(resolution);
+                break;
+        }
+    }
+
+    private void SetResolution(string value)
+    {
+        string[] dimensions = value.Split('x', StringSplitOptions.TrimEntries);
+        if (dimensions.Length != 2 ||
+            !int.TryParse(dimensions[0], out int width) ||
+            !int.TryParse(dimensions[1], out int height) ||
+            width <= 0 || height <= 0)
+        {
+            return;
+        }
+
+        _preferredWindowedWidth = width;
+        _preferredWindowedHeight = height;
+
+        if (Raylib.IsWindowFullscreen())
+        {
+            return;
+        }
+
+        Raylib.SetWindowMonitor(PrimaryMonitor);
+        FitWindowToPrimaryMonitor();
+    }
+
+    private void DrawLastMenuAction()
+    {
+        if (string.IsNullOrEmpty(_lastMenuAction))
+        {
+            return;
+        }
+
+        string text = $"Last action: {_lastMenuAction}";
+        int x = Raylib.GetScreenWidth() - Raylib.MeasureText(text, 18) - 16;
+        Raylib.DrawText(text, Math.Max(16, x), 10, 18, Color.DarkGray);
+    }
+
+    private static void DrawGameStarted()
+    {
+        const string title = "Game Started";
+        const string hint = "Press Escape or controller B to return to the main menu";
+        int centreY = Raylib.GetScreenHeight() / 2;
+        int titleX = (Raylib.GetScreenWidth() - Raylib.MeasureText(title, 48)) / 2;
+        int hintX = (Raylib.GetScreenWidth() - Raylib.MeasureText(hint, 20)) / 2;
+
+        Raylib.DrawText(title, titleX, centreY - 40, 48, Color.DarkBlue);
+        Raylib.DrawText(hint, hintX, centreY + 30, 20, Color.DarkGray);
     }
 
     private void Shutdown()
@@ -144,4 +225,10 @@ public sealed class GameApplication
         Raylib.CloseWindow();
         _windowInitialized = false;
     }
+}
+
+internal enum ApplicationState
+{
+    Menu,
+    GameStarted
 }
