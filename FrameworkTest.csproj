@@ -9,7 +9,7 @@
 
   <ItemGroup>
     <PackageReference Include="RaylibGameFramework.Configuration" Version="0.1.0" />
-    <PackageReference Include="RaylibGameFramework.Input" Version="0.1.0" />
+    <PackageReference Include="RaylibGameFramework.Input" Version="0.1.1" />
     <PackageReference Include="Raylib-cs" Version="8.0.0" />
   </ItemGroup>
 

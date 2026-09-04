@@ -115,8 +115,23 @@ public sealed class GameApplication
             Raylib.DrawText("Framework Test", 20, 20, 20, Color.DarkGray);
             Raylib.DrawText($"Physical: {_inputController.LastPhysicalInputName}", 20, 60, 30, Color.Black);
             Raylib.DrawText($"Action: {_inputController.LastActionName}", 20, 100, 30, Color.Black);
+            DrawActionState("MoveForward", 160);
+            DrawActionState("Jump", 290);
+            DrawActionState("Fire", 420);
             Raylib.EndDrawing();
         }
+    }
+
+    private void DrawActionState(string action, int y)
+    {
+        const int fontSize = 20;
+        const int lineHeight = 24;
+
+        Raylib.DrawText(action, 20, y, fontSize, Color.DarkGray);
+        Raylib.DrawText($"Down: {_inputController.IsDown(action)}", 40, y + lineHeight, fontSize, Color.Black);
+        Raylib.DrawText($"Pressed: {_inputController.WasPressed(action)}", 40, y + (lineHeight * 2), fontSize, Color.Black);
+        Raylib.DrawText($"Released: {_inputController.WasReleased(action)}", 40, y + (lineHeight * 3), fontSize, Color.Black);
+        Raylib.DrawText($"Value: {_inputController.GetValue(action):0.00}", 40, y + (lineHeight * 4), fontSize, Color.Black);
     }
 
     private void Shutdown()
