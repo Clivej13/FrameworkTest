@@ -1,6 +1,6 @@
 {
-  "WindowWidth": 2560,
-  "WindowHeight": 1440,
+  "WindowWidth": 1280,
+  "WindowHeight": 720,
   "WindowTitle": "Framework Test",
   "TargetFps": 60,
   "VSync": true,

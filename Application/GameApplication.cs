@@ -1,4 +1,5 @@
-using FrameworkTest.Configuration;
+using RaylibGameFramework.Configuration;
+using RaylibGameFramework.Input;
 using Raylib_cs;
 
 namespace FrameworkTest.Application;
@@ -14,13 +15,15 @@ public sealed class GameApplication
     private const int PrimaryMonitor = 0;
 
     private readonly GameConfig _config;
+    private readonly InputController _inputController;
     private ApplicationRunResult _runResult = ApplicationRunResult.Exit;
     private bool _stopRequested;
     private bool _windowInitialized;
 
-    public GameApplication(GameConfig config)
+    public GameApplication(GameConfig config, InputConfig inputConfig)
     {
         _config = config ?? throw new ArgumentNullException(nameof(config));
+        _inputController = new InputController(inputConfig);
     }
 
     public ApplicationRunResult Run()
@@ -105,9 +108,13 @@ public sealed class GameApplication
     {
         while (!_stopRequested && !Raylib.WindowShouldClose())
         {
+            _inputController.Update();
+
             Raylib.BeginDrawing();
             Raylib.ClearBackground(Color.RayWhite);
             Raylib.DrawText("Framework Test", 20, 20, 20, Color.DarkGray);
+            Raylib.DrawText($"Physical: {_inputController.LastPhysicalInputName}", 20, 60, 30, Color.Black);
+            Raylib.DrawText($"Action: {_inputController.LastActionName}", 20, 100, 30, Color.Black);
             Raylib.EndDrawing();
         }
     }

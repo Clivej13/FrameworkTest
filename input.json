@@ -1,0 +1,24 @@
+{
+  "Bindings": [
+    {
+      "Device": "Keyboard",
+      "Input": "W",
+      "Action": "MoveForward"
+    },
+    {
+      "Device": "Keyboard",
+      "Input": "Space",
+      "Action": "Jump"
+    },
+    {
+      "Device": "Mouse",
+      "Input": "Left",
+      "Action": "Fire"
+    },
+    {
+      "Device": "GamepadButton",
+      "Input": "RightFaceDown",
+      "Action": "Jump"
+    }
+  ]
+}
