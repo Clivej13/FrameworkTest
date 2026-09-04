@@ -1,0 +1,8 @@
+{
+  "WindowWidth": 2560,
+  "WindowHeight": 1440,
+  "WindowTitle": "Framework Test",
+  "TargetFps": 60,
+  "VSync": true,
+  "Fullscreen": false
+}
