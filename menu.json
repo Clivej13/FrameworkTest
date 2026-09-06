@@ -1,0 +1,87 @@
+{
+  "StartMenu": "Main",
+  "Menus": {
+    "Main": {
+      "Title": "Framework Test",
+      "Items": [
+        { "Type": "Button", "Text": "Start", "Function": "StartGame" },
+        { "Type": "Button", "Text": "Options", "Function": "OpenMenu", "Target": "Options" },
+        { "Type": "Button", "Text": "Exit", "Function": "ExitGame" }
+      ]
+    },
+    "Options": {
+      "Title": "Options",
+      "Items": [
+        { "Type": "Label", "Text": "Display" },
+        {
+          "Type": "Selector",
+          "Text": "Resolution",
+          "Function": "SetResolution",
+          "Options": [ "1280x720", "1920x1080", "2560x1440" ],
+          "Value": "1920x1080"
+        },
+        { "Type": "Toggle", "Text": "Fullscreen", "Function": "SetFullscreen", "Value": false },
+        { "Type": "Toggle", "Text": "VSync", "Function": "SetVSync", "Value": true },
+        { "Type": "Spacer" },
+        { "Type": "Label", "Text": "Audio" },
+        {
+          "Type": "Slider",
+          "Text": "Master Volume",
+          "Function": "SetMasterVolume",
+          "Min": 0,
+          "Max": 100,
+          "Step": 5,
+          "Value": 80
+        },
+        {
+          "Type": "Slider",
+          "Text": "Music Volume",
+          "Function": "SetMusicVolume",
+          "Min": 0,
+          "Max": 100,
+          "Step": 5,
+          "Value": 70
+        },
+        {
+          "Type": "Slider",
+          "Text": "Effects Volume",
+          "Function": "SetEffectsVolume",
+          "Min": 0,
+          "Max": 100,
+          "Step": 5,
+          "Value": 85
+        },
+        { "Type": "Spacer" },
+        { "Type": "Button", "Text": "Controls", "Function": "OpenMenu", "Target": "Controls" },
+        { "Type": "Spacer" },
+        { "Type": "Label", "Text": "Gameplay" },
+        {
+          "Type": "Selector",
+          "Text": "Difficulty",
+          "Function": "SetDifficulty",
+          "Options": [ "Easy", "Normal", "Heroic", "Legendary" ],
+          "Value": "Normal"
+        },
+        { "Type": "Toggle", "Text": "Subtitles", "Function": "SetSubtitles", "Value": true },
+        { "Type": "Toggle", "Text": "Tutorial Hints", "Function": "SetTutorialHints", "Value": true },
+        { "Type": "Spacer" },
+        { "Type": "Button", "Text": "Back", "Function": "Back" }
+      ]
+    },
+    "Controls": {
+      "Title": "Controls",
+      "Items": [
+        { "Type": "KeyBind", "Text": "Move Forward", "Function": "Rebind", "Action": "MoveForward" },
+        { "Type": "KeyBind", "Text": "Move Backward", "Function": "Rebind", "Action": "MoveBackward" },
+        { "Type": "KeyBind", "Text": "Move Left", "Function": "Rebind", "Action": "MoveLeft" },
+        { "Type": "KeyBind", "Text": "Move Right", "Function": "Rebind", "Action": "MoveRight" },
+        { "Type": "KeyBind", "Text": "Jump", "Function": "Rebind", "Action": "Jump" },
+        { "Type": "KeyBind", "Text": "Fire", "Function": "Rebind", "Action": "Fire" },
+        { "Type": "KeyBind", "Text": "Aim", "Function": "Rebind", "Action": "Aim" },
+        { "Type": "KeyBind", "Text": "Reload", "Function": "Rebind", "Action": "Reload" },
+        { "Type": "Spacer" },
+        { "Type": "Button", "Text": "Back", "Function": "Back" }
+      ]
+    }
+  }
+}

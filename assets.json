@@ -1,0 +1,19 @@
+{
+  "Assets": [
+    {
+      "Key": "CoreTexture",
+      "Type": "Texture",
+      "Path": "Assets/Test/test.png"
+    },
+    {
+      "Key": "MenuTexture",
+      "Type": "Texture",
+      "Path": "Assets/Test/test.png"
+    },
+    {
+      "Key": "GameTexture",
+      "Type": "Texture",
+      "Path": "Assets/Test/test.png"
+    }
+  ]
+}

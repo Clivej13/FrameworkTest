@@ -1,0 +1,224 @@
+{
+  "Bindings": [
+    {
+      "Device": "Keyboard",
+      "Input": "W",
+      "Action": "MoveForward"
+    },
+    {
+      "Device": "Keyboard",
+      "Input": "S",
+      "Action": "MoveBackward"
+    },
+    {
+      "Device": "Keyboard",
+      "Input": "A",
+      "Action": "MoveLeft"
+    },
+    {
+      "Device": "Keyboard",
+      "Input": "D",
+      "Action": "MoveRight"
+    },
+    {
+      "Device": "Keyboard",
+      "Input": "Space",
+      "Action": "Jump"
+    },
+    {
+      "Device": "Keyboard",
+      "Input": "LeftShift",
+      "Action": "Sprint"
+    },
+    {
+      "Device": "Keyboard",
+      "Input": "LeftControl",
+      "Action": "Crouch"
+    },
+    {
+      "Device": "Keyboard",
+      "Input": "E",
+      "Action": "Interact"
+    },
+    {
+      "Device": "Keyboard",
+      "Input": "R",
+      "Action": "Reload"
+    },
+    {
+      "Device": "Keyboard",
+      "Input": "Escape",
+      "Action": "Pause"
+    },
+    {
+      "Device": "Mouse",
+      "Input": "Left",
+      "Action": "Fire"
+    },
+    {
+      "Device": "Mouse",
+      "Input": "Right",
+      "Action": "Aim"
+    },
+    {
+      "Device": "GamepadButton",
+      "Input": "RightFaceDown",
+      "Action": "Jump"
+    },
+    {
+      "Device": "GamepadButton",
+      "Input": "RightFaceLeft",
+      "Action": "Reload"
+    },
+    {
+      "Device": "GamepadButton",
+      "Input": "RightFaceUp",
+      "Action": "Interact"
+    },
+    {
+      "Device": "GamepadButton",
+      "Input": "LeftThumb",
+      "Action": "Sprint"
+    },
+    {
+      "Device": "GamepadButton",
+      "Input": "RightThumb",
+      "Action": "Crouch"
+    },
+    {
+      "Device": "GamepadButton",
+      "Input": "MiddleRight",
+      "Action": "Pause"
+    },
+    {
+      "Device": "GamepadAxis",
+      "Input": "LeftYNegative",
+      "Action": "MoveForward"
+    },
+    {
+      "Device": "GamepadAxis",
+      "Input": "LeftYPositive",
+      "Action": "MoveBackward"
+    },
+    {
+      "Device": "GamepadAxis",
+      "Input": "LeftXNegative",
+      "Action": "MoveLeft"
+    },
+    {
+      "Device": "GamepadAxis",
+      "Input": "LeftXPositive",
+      "Action": "MoveRight"
+    },
+    {
+      "Device": "GamepadAxis",
+      "Input": "RightXNegative",
+      "Action": "LookLeft"
+    },
+    {
+      "Device": "GamepadAxis",
+      "Input": "RightXPositive",
+      "Action": "LookRight"
+    },
+    {
+      "Device": "GamepadAxis",
+      "Input": "RightYNegative",
+      "Action": "LookUp"
+    },
+    {
+      "Device": "GamepadAxis",
+      "Input": "RightYPositive",
+      "Action": "LookDown"
+    },
+    {
+      "Device": "GamepadAxis",
+      "Input": "RightTrigger",
+      "Action": "Fire"
+    },
+    {
+      "Device": "GamepadAxis",
+      "Input": "LeftTrigger",
+      "Action": "Aim"
+    },
+    {
+      "Device": "Keyboard",
+      "Input": "Up",
+      "Action": "MenuUp"
+    },
+    {
+      "Device": "Keyboard",
+      "Input": "Down",
+      "Action": "MenuDown"
+    },
+    {
+      "Device": "Keyboard",
+      "Input": "Left",
+      "Action": "MenuLeft"
+    },
+    {
+      "Device": "Keyboard",
+      "Input": "Right",
+      "Action": "MenuRight"
+    },
+    {
+      "Device": "Keyboard",
+      "Input": "Enter",
+      "Action": "MenuConfirm"
+    },
+    {
+      "Device": "Keyboard",
+      "Input": "Escape",
+      "Action": "MenuBack"
+    },
+    {
+      "Device": "GamepadButton",
+      "Input": "LeftFaceUp",
+      "Action": "MenuUp"
+    },
+    {
+      "Device": "GamepadButton",
+      "Input": "LeftFaceDown",
+      "Action": "MenuDown"
+    },
+    {
+      "Device": "GamepadButton",
+      "Input": "LeftFaceLeft",
+      "Action": "MenuLeft"
+    },
+    {
+      "Device": "GamepadButton",
+      "Input": "LeftFaceRight",
+      "Action": "MenuRight"
+    },
+    {
+      "Device": "GamepadButton",
+      "Input": "RightFaceDown",
+      "Action": "MenuConfirm"
+    },
+    {
+      "Device": "GamepadButton",
+      "Input": "RightFaceRight",
+      "Action": "MenuBack"
+    },
+    {
+      "Device": "GamepadAxis",
+      "Input": "LeftYNegative",
+      "Action": "MenuUp"
+    },
+    {
+      "Device": "GamepadAxis",
+      "Input": "LeftYPositive",
+      "Action": "MenuDown"
+    },
+    {
+      "Device": "GamepadAxis",
+      "Input": "LeftXNegative",
+      "Action": "MenuLeft"
+    },
+    {
+      "Device": "GamepadAxis",
+      "Input": "LeftXPositive",
+      "Action": "MenuRight"
+    }
+  ]
+}
