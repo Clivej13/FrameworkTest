@@ -5,7 +5,8 @@ namespace FrameworkTest.Assets;
 /// <summary>Owns native assets. Use on the graphics thread and unload before closing the window.</summary>
 public sealed class AssetManager
 {
-    private readonly Queue<AssetDefinition> _pending;
+    private readonly Dictionary<string, AssetDefinition> _catalogue;
+    private readonly HashSet<string> _required = new(StringComparer.Ordinal);
     private readonly Dictionary<string, Texture2D> _textures = new(StringComparer.Ordinal);
     private readonly Dictionary<string, Font> _fonts = new(StringComparer.Ordinal);
 
@@ -13,25 +14,72 @@ public sealed class AssetManager
     {
         ArgumentNullException.ThrowIfNull(config);
         config.Validate();
-        _pending = new Queue<AssetDefinition>(config.Assets);
-        TotalCount = _pending.Count;
+        _catalogue = config.Assets.ToDictionary(asset => asset.Key,
+            asset => asset with { Path = System.IO.Path.GetFullPath(asset.Path, AppContext.BaseDirectory) },
+            StringComparer.Ordinal);
     }
 
     public int LoadedCount => _textures.Count + _fonts.Count;
 
-    /// <summary>The original configured count; unloading does not change it.</summary>
-    public int TotalCount { get; }
+    public int TotalCount => _catalogue.Count;
+    public int RequiredCount => _required.Count;
+    public int PendingLoadCount => _required.Count(key => !IsLoaded(key));
+    public int PendingUnloadCount => _textures.Keys.Concat(_fonts.Keys).Count(key => !_required.Contains(key));
+    public bool HasPendingWork => PendingUnloadCount != 0 || PendingLoadCount != 0;
 
-    /// <summary>Loads at most one asset. Returns true when no pending assets remain.
-    /// A failed asset stays pending and throws with its key and resolved path.</summary>
-    public bool LoadNext()
+    // Requirements are a set, not reference counts. Validate batches before changing anything.
+    public void RequireAsset(string key) => RequireAssets(key);
+    public void RequireAssets(params string[] keys)
     {
-        if (!_pending.TryPeek(out var asset))
+        ValidateKeys(keys);
+        _required.UnionWith(keys);
+    }
+
+    public void ReleaseAsset(string key) => ReleaseAssets(key);
+    public void ReleaseAssets(params string[] keys)
+    {
+        ValidateKeys(keys);
+        _required.ExceptWith(keys);
+    }
+
+    public void SetRequiredAssets(params string[] keys)
+    {
+        ValidateKeys(keys);
+        _required.Clear();
+        _required.UnionWith(keys);
+    }
+
+    public void ClearRequiredAssets() => _required.Clear();
+
+    private void ValidateKeys(string[] keys)
+    {
+        ArgumentNullException.ThrowIfNull(keys);
+        foreach (string key in keys)
+        {
+            ArgumentException.ThrowIfNullOrWhiteSpace(key);
+            if (!_catalogue.ContainsKey(key))
+                throw new KeyNotFoundException($"Asset '{key}' is not in the catalogue.");
+        }
+    }
+
+    /// <summary>Processes at most one owned asset, unloads first. Returns true when work is complete.
+    /// Failed loads remain pending. Call only on the graphics thread with a live window.</summary>
+    public bool ProcessNext()
+    {
+        // Deriving the delta avoids stale queue entries when requirements change between frames.
+        string? unloadKey = _catalogue.Keys.FirstOrDefault(key => IsLoaded(key) && !_required.Contains(key));
+        if (unloadKey is not null)
+        {
+            UnloadOwned(unloadKey);
+            return !HasPendingWork;
+        }
+
+        AssetDefinition? asset = _catalogue.Values.FirstOrDefault(asset =>
+            _required.Contains(asset.Key) && !IsLoaded(asset.Key));
+        if (asset is null)
             return true;
 
-        string path = System.IO.Path.IsPathRooted(asset.Path)
-            ? asset.Path
-            : System.IO.Path.Combine(AppContext.BaseDirectory, asset.Path);
+        string path = asset.Path;
         try
         {
             if (!File.Exists(path))
@@ -42,8 +90,8 @@ public sealed class AssetManager
             else
                 _fonts.Add(asset.Key, LoadFont(path, asset.Size!.Value));
 
-            _pending.Dequeue();
-            return _pending.Count == 0;
+            Console.WriteLine($"[Assets] LOAD {asset.Key}");
+            return !HasPendingWork;
         }
         catch (Exception ex)
         {
@@ -94,24 +142,22 @@ public sealed class AssetManager
 
     public bool IsLoaded(string key) => _textures.ContainsKey(key) || _fonts.ContainsKey(key);
 
-    /// <summary>Unloads a loaded key. Unknown/pending keys are unchanged; assets are not requeued.</summary>
-    public void Unload(string key)
+    private void UnloadOwned(string key)
     {
         if (_textures.Remove(key, out var texture))
             Raylib.UnloadTexture(texture);
-        if (_fonts.Remove(key, out var font))
+        else if (_fonts.Remove(key, out var font))
             Raylib.UnloadFont(font);
+        else
+            return;
+        Console.WriteLine($"[Assets] UNLOAD {key}");
     }
 
-    /// <summary>Unloads owned resources and cancels remaining queued loads. Safe to call again.</summary>
+    /// <summary>Immediately unloads all owned resources and clears requirements. Safe to call again.</summary>
     public void UnloadAll()
     {
-        foreach (var texture in _textures.Values)
-            Raylib.UnloadTexture(texture);
-        foreach (var font in _fonts.Values)
-            Raylib.UnloadFont(font);
-        _textures.Clear();
-        _fonts.Clear();
-        _pending.Clear();
+        foreach (string key in _textures.Keys.Concat(_fonts.Keys).ToArray())
+            UnloadOwned(key);
+        _required.Clear();
     }
 }

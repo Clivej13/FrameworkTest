@@ -22,6 +22,7 @@ public sealed class GameApplication
     private readonly MenuManager _menuManager;
     private ApplicationRunResult _runResult = ApplicationRunResult.Exit;
     private ApplicationState _state = ApplicationState.Loading;
+    private ApplicationState _loadingDestination = ApplicationState.Menu;
     private bool _stopRequested;
     private bool _windowInitialized;
     private string? _lastMenuAction;
@@ -32,6 +33,7 @@ public sealed class GameApplication
     {
         _config = config ?? throw new ArgumentNullException(nameof(config));
         _assetManager = new AssetManager(assetConfig);
+        _assetManager.SetRequiredAssets("CoreTexture", "MenuTexture");
         _inputController = new InputController(inputConfig);
         _menuManager = new MenuManager(menuConfig, _inputController, inputConfig);
         _preferredWindowedWidth = config.WindowWidth;
@@ -85,6 +87,8 @@ public sealed class GameApplication
 
         Raylib.InitWindow(_config.WindowWidth, _config.WindowHeight, _config.WindowTitle);
         _windowInitialized = true;
+        // MenuBack owns Escape; ExitGame and the window close button still exit.
+        Raylib.SetExitKey(KeyboardKey.Null);
         Raylib.SetWindowMonitor(PrimaryMonitor);
 
         if (!_config.Fullscreen)
@@ -125,8 +129,8 @@ public sealed class GameApplication
             }
             else if (_state == ApplicationState.GameStarted && _inputController.WasPressed("MenuBack"))
             {
-                _state = ApplicationState.Menu;
                 _menuManager.ReturnToStartMenu();
+                TransitionTo(ApplicationState.Menu, "MenuTexture");
             }
 
             Raylib.BeginDrawing();
@@ -136,9 +140,7 @@ public sealed class GameApplication
             {
                 _menuManager.Draw();
                 DrawLastMenuAction();
-                // FrameworkTest-only proof that the texture survives the state transition.
-                Raylib.DrawTextureEx(_assetManager.GetTexture("TestTexture"),
-                    new System.Numerics.Vector2(16, Raylib.GetScreenHeight() - 80), 0, 3, Color.White);
+                DrawProofTextures("MenuTexture", Color.DarkGreen);
             }
             else if (_state == ApplicationState.Loading)
             {
@@ -147,21 +149,43 @@ public sealed class GameApplication
             else
             {
                 DrawGameStarted();
+                DrawProofTextures("GameTexture", Color.DarkBlue);
             }
 
             Raylib.EndDrawing();
 
-            // Present a loading frame before doing one synchronous native load.
-            if (_state == ApplicationState.Loading && _assetManager.LoadNext())
+            // Present a loading frame before processing one owned asset.
+            if (_state == ApplicationState.Loading && _assetManager.ProcessNext())
             {
-                _state = ApplicationState.Menu;
+                _state = _loadingDestination;
             }
         }
     }
 
+    private void TransitionTo(ApplicationState destination, string textureKey)
+    {
+        _assetManager.SetRequiredAssets("CoreTexture", textureKey);
+        _loadingDestination = destination;
+        _state = _assetManager.HasPendingWork ? ApplicationState.Loading : destination;
+        Console.WriteLine($"[Assets] REQUIRE CoreTexture, {textureKey}; " +
+            $"KEEP CoreTexture (loaded={_assetManager.IsLoaded("CoreTexture")}); " +
+            $"pending: {_assetManager.PendingLoadCount} loads, {_assetManager.PendingUnloadCount} unloads");
+    }
+
+    private void DrawProofTextures(string stateKey, Color tint)
+    {
+        int y = Raylib.GetScreenHeight() - 80;
+        Raylib.DrawTextureEx(_assetManager.GetTexture("CoreTexture"),
+            new System.Numerics.Vector2(16, y), 0, 3, Color.White);
+        Raylib.DrawText("CoreTexture", 16, y - 22, 16, Color.DarkGray);
+        Raylib.DrawTextureEx(_assetManager.GetTexture(stateKey),
+            new System.Numerics.Vector2(180, y), 0, 3, tint);
+        Raylib.DrawText(stateKey, 180, y - 22, 16, Color.DarkGray);
+    }
+
     private void DrawLoading()
     {
-        string text = $"Loading {_assetManager.LoadedCount} / {_assetManager.TotalCount}";
+        string text = $"Loading: {_assetManager.PendingLoadCount} loads / {_assetManager.PendingUnloadCount} unloads pending";
         int x = (Raylib.GetScreenWidth() - Raylib.MeasureText(text, 28)) / 2;
         Raylib.DrawText(text, x, Raylib.GetScreenHeight() / 2, 28, Color.DarkGray);
     }
@@ -180,7 +204,7 @@ public sealed class GameApplication
         switch (action.Function)
         {
             case "StartGame":
-                _state = ApplicationState.GameStarted;
+                TransitionTo(ApplicationState.GameStarted, "GameTexture");
                 break;
             case "ExitGame":
                 RequestExit();
