@@ -2,6 +2,7 @@ using RaylibGameFramework.Menus;
 using RaylibGameFramework.Configuration;
 using RaylibGameFramework.Input;
 using Raylib_cs;
+using FrameworkTest.Assets;
 
 namespace FrameworkTest.Application;
 
@@ -15,20 +16,22 @@ public sealed class GameApplication
 {
     private const int PrimaryMonitor = 0;
 
+    private readonly AssetManager _assetManager;
     private readonly GameConfig _config;
     private readonly InputController _inputController;
     private readonly MenuManager _menuManager;
     private ApplicationRunResult _runResult = ApplicationRunResult.Exit;
-    private ApplicationState _state = ApplicationState.Menu;
+    private ApplicationState _state = ApplicationState.Loading;
     private bool _stopRequested;
     private bool _windowInitialized;
     private string? _lastMenuAction;
     private int _preferredWindowedWidth;
     private int _preferredWindowedHeight;
 
-    public GameApplication(GameConfig config, InputConfig inputConfig, MenuConfig menuConfig)
+    public GameApplication(GameConfig config, InputConfig inputConfig, MenuConfig menuConfig, AssetConfig assetConfig)
     {
         _config = config ?? throw new ArgumentNullException(nameof(config));
+        _assetManager = new AssetManager(assetConfig);
         _inputController = new InputController(inputConfig);
         _menuManager = new MenuManager(menuConfig, _inputController, inputConfig);
         _preferredWindowedWidth = config.WindowWidth;
@@ -120,7 +123,7 @@ public sealed class GameApplication
             {
                 HandleMenuAction(_menuManager.Update());
             }
-            else if (_inputController.WasPressed("MenuBack"))
+            else if (_state == ApplicationState.GameStarted && _inputController.WasPressed("MenuBack"))
             {
                 _state = ApplicationState.Menu;
                 _menuManager.ReturnToStartMenu();
@@ -133,6 +136,13 @@ public sealed class GameApplication
             {
                 _menuManager.Draw();
                 DrawLastMenuAction();
+                // FrameworkTest-only proof that the texture survives the state transition.
+                Raylib.DrawTextureEx(_assetManager.GetTexture("TestTexture"),
+                    new System.Numerics.Vector2(16, Raylib.GetScreenHeight() - 80), 0, 3, Color.White);
+            }
+            else if (_state == ApplicationState.Loading)
+            {
+                DrawLoading();
             }
             else
             {
@@ -140,7 +150,20 @@ public sealed class GameApplication
             }
 
             Raylib.EndDrawing();
+
+            // Present a loading frame before doing one synchronous native load.
+            if (_state == ApplicationState.Loading && _assetManager.LoadNext())
+            {
+                _state = ApplicationState.Menu;
+            }
         }
+    }
+
+    private void DrawLoading()
+    {
+        string text = $"Loading {_assetManager.LoadedCount} / {_assetManager.TotalCount}";
+        int x = (Raylib.GetScreenWidth() - Raylib.MeasureText(text, 28)) / 2;
+        Raylib.DrawText(text, x, Raylib.GetScreenHeight() / 2, 28, Color.DarkGray);
     }
 
     private void HandleMenuAction(MenuAction? action)
@@ -222,6 +245,7 @@ public sealed class GameApplication
             return;
         }
 
+        _assetManager.UnloadAll();
         Raylib.CloseWindow();
         _windowInitialized = false;
     }
@@ -229,6 +253,7 @@ public sealed class GameApplication
 
 internal enum ApplicationState
 {
+    Loading,
     Menu,
     GameStarted
 }

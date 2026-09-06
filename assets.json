@@ -1,0 +1,9 @@
+{
+  "Assets": [
+    {
+      "Key": "TestTexture",
+      "Type": "Texture",
+      "Path": "Assets/Test/test.png"
+    }
+  ]
+}
