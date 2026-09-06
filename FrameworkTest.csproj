@@ -8,6 +8,7 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <PackageReference Include="RaylibGameFramework.Assets" Version="0.1.0" />
     <PackageReference Include="RaylibGameFramework.Configuration" Version="0.1.0" />
     <PackageReference Include="RaylibGameFramework.Input" Version="0.1.4" />
     <PackageReference Include="RaylibGameFramework.Menus" Version="0.1.1" />

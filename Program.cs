@@ -1,5 +1,5 @@
 using FrameworkTest.Application;
-using FrameworkTest.Assets;
+using RaylibGameFramework.Assets;
 using RaylibGameFramework.Menus;
 using RaylibGameFramework.Configuration;
 using RaylibGameFramework.Input;

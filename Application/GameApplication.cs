@@ -2,7 +2,7 @@ using RaylibGameFramework.Menus;
 using RaylibGameFramework.Configuration;
 using RaylibGameFramework.Input;
 using Raylib_cs;
-using FrameworkTest.Assets;
+using RaylibGameFramework.Assets;
 
 namespace FrameworkTest.Application;
 
@@ -185,9 +185,24 @@ public sealed class GameApplication
 
     private void DrawLoading()
     {
-        string text = $"Loading: {_assetManager.PendingLoadCount} loads / {_assetManager.PendingUnloadCount} unloads pending";
-        int x = (Raylib.GetScreenWidth() - Raylib.MeasureText(text, 28)) / 2;
-        Raylib.DrawText(text, x, Raylib.GetScreenHeight() / 2, 28, Color.DarkGray);
+        const string title = "Loading...";
+        const int barHeight = 24;
+        const int border = 2;
+        int screenWidth = Raylib.GetScreenWidth();
+        int barWidth = Math.Max(1, Math.Min(400, screenWidth - 40));
+        int barX = (screenWidth - barWidth) / 2;
+        int barY = Raylib.GetScreenHeight() / 2;
+        float progress = _assetManager.Progress;
+        string percentage = $"{(int)(progress * 100)}%";
+
+        Raylib.DrawText(title, (screenWidth - Raylib.MeasureText(title, 28)) / 2,
+            barY - 44, 28, Color.DarkGray);
+        Raylib.DrawRectangle(barX - border, barY - border,
+            barWidth + border * 2, barHeight + border * 2, Color.DarkGray);
+        Raylib.DrawRectangle(barX, barY, barWidth, barHeight, Color.LightGray);
+        Raylib.DrawRectangle(barX, barY, (int)(barWidth * progress), barHeight, Color.DarkGreen);
+        Raylib.DrawText(percentage, (screenWidth - Raylib.MeasureText(percentage, 24)) / 2,
+            barY + barHeight + 16, 24, Color.DarkGray);
     }
 
     private void HandleMenuAction(MenuAction? action)
